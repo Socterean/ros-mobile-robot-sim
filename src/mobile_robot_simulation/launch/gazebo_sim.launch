@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+
+    <param name="robot_description" command="xacro $(find mobile_robot_simulation)/urdf/rover.urdf.xacro"/>
+    <arg name="rviz_config_file" default="$(find mobile_robot_simulation)/config/robot_viz.rviz"/>
+
+    <rosparam command="load" file="$(find mobile_robot_simulation)/config/diff_drive.yaml"/>
+
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+    <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher"/>
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rviz_config_file)"/>
+
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <!-- <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/empty.world"/> -->
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="gui" value="true"/>
+        <arg name="headless" value="false"/>
+        <arg name="debug" value="false"/>
+    </include>
+
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -model rover -param robot_description"/>
+
+    <node name="spawn_controller" pkg="controller_manager" type="spawner" output="screen" args="rover_diff_drive_controller"/>
+    <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering" output="screen">
+        <param name="default_topic" value="rover_diff_drive_controller/cmd_vel"/>
+    </node>
+
+</launch>
